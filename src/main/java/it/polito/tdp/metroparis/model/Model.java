@@ -63,6 +63,8 @@ public class Model {
 	}
 	
 	/* determina il percorso minimo tra le 2 fermate */
+	//se ho un grafico pesato, non posso utilizzare BreadthFirst iterator oppure DepthFirstIterator!
+	//Devo utilizzare algoritmo di Dijkstra
 	public List<Fermata> percorso(Fermata partenza, Fermata arrivo) {
 
 		DijkstraShortestPath<Fermata, DefaultWeightedEdge> sp = 
