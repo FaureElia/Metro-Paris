@@ -22,7 +22,7 @@ public class Model {
 	public void creaGrafo() {
 		
 		// crea l'oggetto grafo
-		this.grafo = new SimpleGraph<Fermata, DefaultEdge>(DefaultEdge.class) ;
+		this.grafo = new SimpleGraph<Fermata,DefaultEdge>(DefaultEdge.class) ;
 		
 		// aggiungi i vertici
 		MetroDAO dao = new MetroDAO() ;
@@ -37,6 +37,7 @@ public class Model {
 		// aggiungi gli archi
 		
 		// metodo 1: considero tutti i potenziali archi
+		//UTILE SE POCHI NODI O QUERY TOTALE MOLTO COMPLESSA, UN ALTRO CASO N CUI CONVIENE E' QUANDO LE FERMATE HANNO NELL'OGGETTO GLIA' LE PROPRIETà PER DETERINARE I PESI O LA CONNESSIONE
 //		long tic = System.currentTimeMillis();
 //		for(Fermata partenza: this.grafo.vertexSet()) {
 //			for(Fermata arrivo: this.grafo.vertexSet()) {
@@ -60,7 +61,7 @@ public class Model {
 		long toc = System.currentTimeMillis();
 		System.out.println("Elapsed time "+ (toc-tic));
 		
-		// metodo 2a: data una fermata, troviamo la lista di id connessi
+		// metodo 2A: data una fermata, troviamo la lista di id connessi, evito di creare una nuova classe ogni volta!
 		tic = System.currentTimeMillis();
 		for(Fermata partenza: this.grafo.vertexSet()) {
 			List<Fermata> collegate = dao.trovaIdCollegate(partenza, fermateIdMap) ;
@@ -88,13 +89,18 @@ public class Model {
 		System.out.println(this.grafo);
 	}
 	
+	///////////////////////////////////
+	////CALCOLO DEL PERCORSO MINIMO////
+	///////////////////////////////////
 	/* determina il percorso minimo tra le 2 fermate */
+	
+	
 	public List<Fermata> percorso(Fermata partenza, Fermata arrivo) {
 		// Visita il grafo partendo da 'partenza'
 		BreadthFirstIterator<Fermata, DefaultEdge> visita = 
 				new BreadthFirstIterator<>(this.grafo, partenza) ;
 		List<Fermata> raggiungibili = new ArrayList<Fermata>() ;
-		
+		//itero sull'oggetto visita!
 		while(visita.hasNext()) {
 			Fermata f = visita.next() ;
 //			raggiungibili.add(f) ;
@@ -102,12 +108,14 @@ public class Model {
 //		System.out.println(raggiungibili) ;
 		
 		// Trova il percorso sull'albero di visita
+		//devo partire dal fondo!! altrimenti non so che ramo scegliere.
 		List<Fermata> percorso = new ArrayList<Fermata>() ;
 		Fermata corrente = arrivo ;
 		percorso.add(arrivo) ;
-		
+		//il metodo getSpanningTreeEdge mi fornisce l'arco dell'albero che collega tutti i nodi con la visita in ampieza e che parte dal nodo come parametro
 		DefaultEdge e = visita.getSpanningTreeEdge(corrente) ;
 		while(e!=null) {
+			//metodo che mi restituisce il vertic opposto
 			Fermata precedente = Graphs.getOppositeVertex(this.grafo, e, corrente) ;
 			percorso.add(0, precedente) ;
 			corrente = precedente ;
