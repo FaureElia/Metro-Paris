@@ -25,6 +25,14 @@ public class Model {
 	private List<Fermata> fermate ;
 	private Map<Integer, Fermata> fermateIdMap ;
 	
+	//cammini minimi
+	private Double shortestPathValue;
+	private Double casualPathValue;
+	
+	public Double getShortestPathValue() {
+		return shortestPathValue;
+	}
+
 	public void creaGrafo() {
 		
 		// crea l'oggetto grafo
@@ -62,19 +70,62 @@ public class Model {
 		System.out.println(this.grafo);
 	}
 	
-	/* determina il percorso minimo tra le 2 fermate */
+	/* determina il percorso MINIMO tra le 2 fermate */
 	//se ho un grafico pesato, non posso utilizzare BreadthFirst iterator oppure DepthFirstIterator!
 	//Devo utilizzare algoritmo di Dijkstra
-	public List<Fermata> percorso(Fermata partenza, Fermata arrivo) {
+	public List<Fermata> percorsoMinimo(Fermata partenza, Fermata arrivo) {
 
 		DijkstraShortestPath<Fermata, DefaultWeightedEdge> sp = 
 				new DijkstraShortestPath<>(this.grafo) ;
 		
 		GraphPath<Fermata, DefaultWeightedEdge> gp = sp.getPath(partenza, arrivo) ;
+		this.shortestPathValue=gp.getWeight();
 		
 		return gp.getVertexList() ;
 	}
 	
+	//DETERMINA UN PERCORSO CASUALE TRA DUE NODI
+	
+	public List <Fermata> percorsoCasuale(Fermata partenza, Fermata arrivo){
+		BreadthFirstIterator<Fermata, DefaultWeightedEdge> iteratore=new BreadthFirstIterator<>(this.grafo,partenza);
+		List<Fermata> percorso=new ArrayList<>();
+		while(iteratore.hasNext()) {
+			Fermata f=iteratore.next();
+			percorso.add(f);
+			if(f.equals(arrivo)) {
+				System.out.println("fermato in anticipo");
+				break;
+				
+			}	
+		}
+		if(!percorso.contains(arrivo)) {
+			return null;
+		}
+		
+		//esploro
+		List<Fermata> cammino=new ArrayList<>();
+		Fermata current=arrivo;
+		this.casualPathValue=0.0;
+		DefaultWeightedEdge e=iteratore.getSpanningTreeEdge(arrivo);
+		cammino.add(current);
+		while(e!=null) {
+			this.casualPathValue+=this.grafo.getEdgeWeight(e);
+			current=Graphs.getOppositeVertex(this.grafo, e, current);
+			cammino.add(0,current);
+			e=iteratore.getSpanningTreeEdge(current);	
+		}
+		return cammino;
+	}
+	
+	
+	public Double getCasualPathValue() {
+		return casualPathValue;
+	}
+
+	public void setCasualPathValue(Double casualPathValue) {
+		this.casualPathValue = casualPathValue;
+	}
+
 	public List<Fermata> getAllFermate(){
 		MetroDAO dao = new MetroDAO() ;
 		return dao.readFermate() ;
@@ -82,6 +133,11 @@ public class Model {
 	
 	public boolean isGrafoLoaded() {
 		return this.grafo.vertexSet().size()>0;
+	}
+
+	public String getShortestValue() {
+		
+		return null;
 	}
 
 }

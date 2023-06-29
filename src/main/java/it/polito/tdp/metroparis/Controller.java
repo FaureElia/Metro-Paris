@@ -34,11 +34,16 @@ public class Controller {
     	Fermata arrivo = boxArrivo.getValue() ;
     	
     	if(partenza!=null && arrivo!=null && !partenza.equals(arrivo)) {
-    		List<Fermata> percorso = model.percorso(partenza, arrivo) ;
+    		List<Fermata> percorso = model.percorsoCasuale(partenza, arrivo) ;
+    		if(percorso==null) {
+    			this.txtResult.setText("percorso non trovato");
+    			return;
+    		}
     		txtResult.setText("Percorso tra "+partenza.getNome()+" e "+arrivo.getNome()+"\n\n");
     		for(Fermata f: percorso) {
     			txtResult.appendText(f.getNome()+"\n");
     		}
+    		this.txtResult.appendText(this.model.getCasualPathValue()+"\n");
     	} else {
     		txtResult.appendText("Devi selezionare due stazioni diverse tra loro\n");
     	}
